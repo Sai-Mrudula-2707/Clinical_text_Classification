@@ -1,71 +1,81 @@
 # 🩺 Clinical Text Classification using Machine Learning
 
-This project focuses on **automated classification of medical transcriptions** into their corresponding **medical specialties** using Natural Language Processing (NLP) and supervised learning models.  
-The goal is to preprocess raw clinical text, extract meaningful textual features, and train models to accurately classify the specialty.
+This project focuses on **classifying clinical transcriptions** into their respective **medical specialties** using Natural Language Processing (NLP) and supervised learning.  
+The goal is to automate specialty tagging of medical text — reducing manual categorization time and improving information retrieval for healthcare data.
 
 ---
 
 ## 🎯 Objectives
-
-- Preprocess and clean raw medical transcriptions.  
-- Extract features using **TF-IDF (Term Frequency–Inverse Document Frequency)**.  
-- Train a **Multinomial Naive Bayes** classifier and fine-tune hyperparameters using cross-validation.  
-- Evaluate performance with multiple metrics — **precision**, **recall**, **F1-score**, **support**, **macro/weighted averages**, and **accuracy**.
+- Preprocess and clean raw medical text data.
+- Extract meaningful features using **TF-IDF** vectorization.
+- Train a classification model to predict the **medical subspecialty**.
+- Evaluate using multiple metrics — **Precision, Recall, F1-Score, Accuracy, and Support**.
+- Save the trained model for real-time prediction.
 
 ---
 
 ## 📊 Dataset
 
-**Dataset:** `mtsamples.csv`  
-**Source:** Open-source clinical transcription dataset (MTSamples).  
-**Size:** ~5,000 medical transcriptions.  
+**Dataset Name:** `mtsamples.csv`  
+**Source:** [MTSamples Clinical Transcription Dataset](https://www.mtsamples.com/)  
+**Records:** ~5,000 clinical transcriptions
 
-### Columns:
 | Column | Description |
-|--------|--------------|
-| `#` | Transcription ID |
-| `description` | Short description of the medical note |
-| `medical_specialty` | Target variable – medical subspecialty (e.g., Cardiology, Neurology) |
-| `sample_name` | Type of document (e.g., Discharge Summary, Consultation) |
-| `transcription` | Complete medical transcription text |
-| `keywords` | Keywords related to the document |
+|---------|--------------|
+| `#` | Unique ID |
+| `description` | Short description of the transcription |
+| `medical_specialty` | Target label — medical subspecialty |
+| `sample_name` | Type of case (e.g., Discharge Summary, Operative Report) |
+| `transcription` | Full clinical note |
+| `keywords` | Keywords related to transcription |
 
-> Some entries describe note types (e.g., discharge summary) rather than true specialties — these were treated as overlapping classes.
+> Some transcriptions may represent general notes (not tied to one specialty); these are treated as overlapping or "Other" classes.
 
 ---
 
 ## 🧹 Data Preprocessing
-
-1. **Column Selection:**  
-   Selected relevant columns — `transcription`, `medical_specialty`, `sample_name`.  
-2. **Missing Values:**  
-   Dropped rows missing text or specialty labels.  
-3. **Text Cleaning:**  
-   - Lowercasing  
-   - Removing punctuation and stopwords  
-   - Optional lemmatization using `nltk`  
-4. **Data Splitting:**  
-   70:30 train-test ratio, stratified by medical specialty.  
+- Selected key columns: `transcription`, `medical_specialty`, `sample_name`
+- Dropped missing or null rows
+- Text cleaning:
+  - Lowercasing
+  - Removing punctuation and extra spaces
+  - Stopword removal
+  - Lemmatization (optional)
+- Combined very low-frequency labels under `"Other"`
+- Split data into **70% training** and **30% testing**
 
 ---
 
 ## 🧠 Feature Extraction
-
-- Used **TF-IDF Vectorizer** to convert text into numerical features.  
-- Parameters tuned: `max_df`, `min_df`, and `ngram_range`.  
-- Captures the importance of words and bigrams while ignoring high-frequency stopwords.
+Used **TF-IDF (Term Frequency – Inverse Document Frequency)** to transform textual data into numeric feature vectors.
+- Captures importance of terms across documents.
+- Removes bias from common medical terms like “patient”, “doctor”, “normal”.
 
 ---
 
-## 🤖 Model Training & Fine-Tuning
+## 🤖 Model Training
 
-- **Model Used:** `MultinomialNB` (Multinomial Naive Bayes)  
-- **Hyperparameter tuning:** GridSearchCV with 5-fold cross-validation  
-- **Parameter tuned:** `alpha` (smoothing factor)  
-- **Pipeline:** TF-IDF → MultinomialNB  
+**Model Used:** `Multinomial Naive Bayes`  
+**Reason:** Works best with sparse word frequency data like TF-IDF vectors and gives fast, interpretable results.
 
-```python
-pipeline = Pipeline([
-    ('tfidf', TfidfVectorizer(max_df=0.9, min_df=3, ngram_range=(1,2), stop_words='english')),
-    ('clf', MultinomialNB())
-])
+**Steps:**
+1. Built a `Pipeline` combining `TfidfVectorizer` and `MultinomialNB`.
+2. Performed **GridSearchCV** (5-fold CV) for hyperparameter tuning of:
+   - `alpha` (smoothing)
+   - `ngram_range`
+   - `min_df`, `max_df`
+3. Selected the best model based on **macro-averaged F1-score**.
+
+---
+
+## 📈 Evaluation Metrics
+Evaluated on test data using:
+- **Precision**
+- **Recall**
+- **F1-Score**
+- **Support**
+- **Macro Average**
+- **Weighted Average**
+- **Accuracy**
+
+**Sample Output:**
